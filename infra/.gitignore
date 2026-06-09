@@ -8,6 +8,7 @@
 
 # Variable files with real values — only commit .example files
 terraform.tfvars
+**/envs/production.tfvars
 
 # Crash logs
 crash.log
