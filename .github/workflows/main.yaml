@@ -80,6 +80,7 @@ jobs:
               -e "AWS_REGION=${{ secrets.AWS_REGION }}" \
               -e "MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}" \
               -e "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" \
+              -e "MLFLOW_ALLOW_FILE_STORE=true" \
               ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
 
             docker system prune -f
