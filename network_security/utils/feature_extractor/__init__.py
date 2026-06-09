@@ -6,6 +6,10 @@ from network_security.utils.feature_extractor.features import (
     FeatureGroup,
     build_feature_vector,
 )
+from network_security.utils.feature_extractor.url_validator import (
+    SSRFBlockedError,
+    validate_url_for_fetch,
+)
 
 __all__ = [
     "URLFeatureExtractor",
@@ -14,4 +18,6 @@ __all__ = [
     "FEATURE_FALLBACKS",
     "FeatureGroup",
     "build_feature_vector",
+    "SSRFBlockedError",
+    "validate_url_for_fetch",
 ]
