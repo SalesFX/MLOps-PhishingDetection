@@ -39,49 +39,60 @@ with Diagram(
     show=False,
     direction="LR",
 ):
-    # ── Entrada ────────────────────────────────────────────────────────────────
-    user = User("User / Browser\nURL mode · CSV mode")
+    # ── Dois nós de usuário (entrada e saída) — evita linha longa de retorno ───
+    user_in  = User("User / Browser\nURL mode · CSV mode")
+    user_out = User("User / Browser\nJSON response")
 
-    # ── Fluxo principal (esquerda → direita) ───────────────────────────────────
+    # ── Fluxo principal ────────────────────────────────────────────────────────
     api   = FastAPI("FastAPI App\nREST API · Web UI")
     ssrf  = Python("SSRF Validator\nSafe URL validation")
     fe    = Python("Feature Extractor\n30 phishing features")
     model = Python("ML Model\nGradient Boosting")
     resp  = Python("JSON Response\nprediction · confidence\nwarnings")
 
-    # ── Suporte: acima do fluxo principal ──────────────────────────────────────
+    # ── Infraestrutura ─────────────────────────────────────────────────────────
     with Cluster("CI/CD + Infrastructure"):
         cicd = GithubActions("GitHub Actions\ntest · build · deploy")
         aws  = EC2("AWS Runtime\nEC2 · Docker · ECR")
         cicd >> aws
 
-    # ── Suporte: abaixo do fluxo principal ─────────────────────────────────────
-    s3    = S3("S3 Model Artifacts\nmodel.pkl")
+    # ── Artefato do modelo ─────────────────────────────────────────────────────
+    s3 = S3("S3 — Model Artifact\nmodel.pkl")
+
+    # ── Dados da aplicação ─────────────────────────────────────────────────────
     mongo = MongoDB("MongoDB Atlas\nprediction logs · app data")
 
+    # ── Inteligência externa — próxima ao Feature Extractor ───────────────────
     with Cluster("External Intelligence"):
         gsb    = General("Google Safe\nBrowsing")
         tranco = General("Tranco\nURL Ranking")
 
     # ═══════════════════════════════════════════════════════════════════════════
-    # Fluxo principal — esquerda para direita
+    # Fluxo principal — esquerda para direita sem loop de retorno
     # ═══════════════════════════════════════════════════════════════════════════
-    user  >> api
-    api   >> ssrf
-    ssrf  >> fe
-    fe    >> model
-    model >> resp
-    resp  >> Edge(label="JSON") >> user
+    user_in >> Edge(label="URL / CSV") >> api
+    api     >> ssrf
+    ssrf    >> fe
+    fe      >> model
+    model   >> resp
+    resp    >> Edge(label="JSON")      >> user_out
 
     # ═══════════════════════════════════════════════════════════════════════════
     # Fluxos de apoio
     # ═══════════════════════════════════════════════════════════════════════════
-    aws   >> Edge(label="runs container") >> api
-    s3    >> Edge(label="load model.pkl",
-                  color="darkgreen",
-                  style="bold")          >> model
-    gsb    >> Edge(style="dashed")       >> fe
-    tranco >> Edge(style="dashed")       >> fe
-    api    >> Edge(style="dashed")       >> mongo
+
+    # Infraestrutura → aplicação
+    aws >> Edge(label="runs container") >> api
+
+    # S3 → modelo (artefato)
+    s3  >> Edge(label="model artifact") >> model
+
+    # External Intelligence → Feature Extractor
+    gsb    >> Edge(style="dashed") >> fe
+    tranco >> Edge(style="dashed") >> fe
+
+    # FastAPI → MongoDB
+    api >> Edge(style="dashed",
+                label="prediction logs /\napp data") >> mongo
 
 print(f"Diagrama gerado: {OUTPUT}.png")
