@@ -35,7 +35,23 @@ Também aceita CSV com features pré-extraídas para uso técnico, batch e exper
 
 ## Arquitetura
 
-![Arquitetura](images/architecture.png)
+### Application Runtime
+
+Como a aplicação recebe uma URL ou CSV, extrai features, chama o modelo e retorna a predição.
+
+![Application Runtime](images/architecture-app-runtime.png)
+
+### CI/CD Deployment
+
+Como o código sai do GitHub, é testado, empacotado em Docker e implantado na AWS.
+
+![CI/CD Deployment](images/architecture-cicd-deployment.png)
+
+### Infraestrutura AWS — Terraform
+
+Quais recursos AWS são provisionados como código.
+
+![Terraform AWS](images/architecture-terraform-aws.png)
 
 ---
 
