@@ -1,0 +1,17 @@
+# Terraform state files — never commit
+*.tfstate
+*.tfstate.backup
+
+# Terraform working directory
+.terraform/
+.terraform.lock.hcl
+
+# Variable files with real values — only commit .example files
+terraform.tfvars
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Key pairs generated locally
+*.pem

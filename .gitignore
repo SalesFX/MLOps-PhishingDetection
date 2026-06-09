@@ -1,0 +1,38 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Environment variables
+.env
+
+# System-generated files
+.DS_Store
+
+# Log files
+logs/
+
+# Artifacts
+Artifacts/
+
+# MLFLOW Tracking files
+mlruns/
+
+# Trained model binaries — stored in S3, not in git
+final_model/
+*.pkl
+
+# Runtime prediction output
+prediction_output/
+
+# pytest cache
+.pytest_cache/
+
+# Local session notes
+STATUS.md

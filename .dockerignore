@@ -1,0 +1,38 @@
+# Version control
+.git/
+.gitignore
+
+# Environment and secrets
+.env
+
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Test and lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ML artifacts — stored in S3, not in the image
+Artifacts/
+artifacts/
+final_model/
+mlruns/
+prediction_output/
+*.pkl
+
+# Logs
+logs/
+
+# Dev tooling
+.claude/
+uv.lock
+
+# CI/CD config (not needed at runtime)
+.github/
