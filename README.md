@@ -1,14 +1,14 @@
 # MLOps Phishing Detection
 
-A production-style MLOps platform for phishing URL detection. Accepts a raw URL or a pre-extracted feature CSV, runs the full inference pipeline, and returns whether the URL is phishing or legitimate — with confidence score, feature breakdown and warnings.
+Plataforma MLOps para deteccao de phishing em URLs. Aceita uma URL bruta ou um CSV com features pre-extraidas, executa o pipeline completo de inferencia e retorna se a URL e phishing ou legitima — com pontuacao de confianca, detalhamento das features e avisos.
 
 ![CI/CD](https://github.com/SalesFX/MLOps-PhishingDetection/actions/workflows/main.yaml/badge.svg)
 
 ---
 
-## Architecture
+## Arquitetura
 
-![Architecture](images/architecture.png)
+![Arquitetura](images/architecture.png)
 
 **Stack:** MongoDB Atlas · scikit-learn · MLflow · FastAPI · Docker · AWS S3 / ECR / EC2 · GitHub Actions · Terraform
 
@@ -16,37 +16,37 @@ A production-style MLOps platform for phishing URL detection. Accepts a raw URL 
 
 ## Interface
 
-| Home | Phishing Result + History |
-|------|--------------------------|
+| Tela inicial | Resultado phishing + Historico |
+|--------------|-------------------------------|
 | ![Home](images/screenshot-url-checker.png) | ![Phishing](images/screenshot-result-phishing-and-history.png) |
 
-| Legitimate Result | CI/CD Pipeline |
-|-------------------|----------------|
+| Resultado legitima | Pipeline CI/CD |
+|--------------------|----------------|
 | ![Legitima](images/screenshot-result-legitimate.png) | ![CICD](images/screenshot-cicd-pipeline.png) |
 
 ---
 
-## Prediction Modes
+## Modos de predicao
 
-### URL Mode — `POST /predict-url`
+### Predicao por URL — `POST /predict-url`
 
-The user submits a raw URL. The system automatically:
+O usuario envia uma URL bruta. O sistema automaticamente:
 
-1. Validates the URL against SSRF rules
-2. Extracts 30 numerical features across 4 groups (string, HTTP/HTML, DNS/WHOIS, external APIs)
-3. Builds the ordered feature vector
-4. Runs the trained Gradient Boosting model
-5. Returns prediction, confidence, all 30 features and any warnings
+1. Valida a URL contra regras de protecao SSRF
+2. Extrai 30 features numericas em 4 grupos (string, HTTP/HTML, DNS/WHOIS, APIs externas)
+3. Monta o vetor ordenado de 30 posicoes
+4. Executa o modelo Gradient Boosting treinado
+5. Retorna predicao, confianca, todas as features e avisos
 
 ```bash
 curl -X POST http://localhost:8080/predict-url \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://example.com/login"}'
+  -d '{"url": "https://exemplo.com/login"}'
 ```
 
 ```json
 {
-  "url": "https://example.com/login",
+  "url": "https://exemplo.com/login",
   "prediction": "legitimate",
   "confidence": 0.97,
   "features": { "having_IP_Address": 1, "SSLfinal_State": 1 },
@@ -56,90 +56,90 @@ curl -X POST http://localhost:8080/predict-url \
 }
 ```
 
-### CSV Mode — `POST /predict`
+### Predicao por CSV — `POST /predict`
 
-Accepts a CSV file with the 30 pre-extracted features. Returns an HTML table with the `predicted_column` appended. Designed for batch processing, dataset reprocessing and technical experiments.
+Aceita um arquivo CSV com as 30 features pre-extraidas. Retorna uma tabela HTML com a coluna `predicted_column` adicionada. Indicado para processamento em lote, reprocessamento de datasets e experimentos tecnicos.
 
 ```bash
 curl -X POST http://localhost:8080/predict \
   -F "file=@data/samples/predict_sample.csv"
 ```
 
-> Full contracts: [docs/api.md](docs/api.md)
+> Contratos completos: [docs/api.md](docs/api.md)
 
 ---
 
-## Quick Start
+## Rodando localmente
 
 ```bash
-# 1. Clone and install
+# 1. Clone e instale
 git clone https://github.com/SalesFX/MLOps-PhishingDetection.git
 cd MLOps-PhishingDetection
 pip install -e ".[dev]"
 
-# 2. Configure environment
-echo "MONGO_DB_URL=your_connection_string" > .env
+# 2. Configure o ambiente
+echo "MONGO_DB_URL=sua_connection_string" > .env
 
-# 3. Run
+# 3. Suba a aplicacao
 python app.py
 
-# 4. Open
+# 4. Acesse
 # http://localhost:8080/url-checker
 ```
 
-> The model must be trained before predictions. Use the **Treinar Modelo** button on the interface or `GET /train`.
+> O modelo precisa ser treinado antes das predicoes. Use o botao **Treinar Modelo** na interface ou acesse `GET /train`.
 
 ---
 
-## API Routes
+## Rotas
 
-| Route | Method | Description |
-|-------|--------|-------------|
-| `/url-checker` | GET | Web interface |
-| `/predict-url` | POST | Predict from raw URL |
-| `/predict` | POST | Predict from feature CSV |
-| `/train` | GET | Run training pipeline |
+| Rota | Metodo | Descricao |
+|------|--------|-----------|
+| `/url-checker` | GET | Interface web |
+| `/predict-url` | POST | Predicao por URL bruta |
+| `/predict` | POST | Predicao por CSV de features |
+| `/train` | GET | Executa o pipeline de treinamento |
 | `/docs` | GET | OpenAPI / Swagger UI |
 
 ---
 
-## Environment Variables
+## Variaveis de ambiente
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `MONGO_DB_URL` | Yes | MongoDB Atlas connection string |
-| `GOOGLE_SAFE_BROWSING_API_KEY` | No | Enables `Statistical_report` via Google Safe Browsing API |
+| Variavel | Obrigatoria | Descricao |
+|----------|-------------|-----------|
+| `MONGO_DB_URL` | Sim | String de conexao com o MongoDB Atlas |
+| `GOOGLE_SAFE_BROWSING_API_KEY` | Nao | Habilita a feature `Statistical_report` via Google Safe Browsing |
 
-Without `GOOGLE_SAFE_BROWSING_API_KEY` the system runs normally — `Statistical_report` falls back to `0` with a warning.
+Sem `GOOGLE_SAFE_BROWSING_API_KEY` o sistema funciona normalmente — `Statistical_report` usa fallback `0` com aviso na resposta.
 
 ---
 
-## Tests
+## Testes
 
 ```bash
 uv run pytest tests/ -v
 ```
 
-151 tests — all dependencies mocked, no real network calls required.
+151 testes — todas as dependencias externas sao mockadas, sem necessidade de conexao real.
 
 ---
 
-## Documentation
+## Documentacao
 
-| Doc | Contents |
-|-----|----------|
-| [docs/api.md](docs/api.md) | Full API contracts and request/response schemas |
-| [docs/feature-extraction.md](docs/feature-extraction.md) | All 30 features, groups, semantics and fallback strategy |
-| [docs/security.md](docs/security.md) | SSRF protection rules and implementation |
-| [docs/infra-spec.md](docs/infra-spec.md) | Terraform infrastructure specification |
+| Documento | Conteudo |
+|-----------|----------|
+| [docs/api.md](docs/api.md) | Contratos completos e schemas de request/response |
+| [docs/feature-extraction.md](docs/feature-extraction.md) | As 30 features, grupos, semantica e estrategia de fallback |
+| [docs/security.md](docs/security.md) | Protecao SSRF: regras e implementacao |
+| [docs/infra-spec.md](docs/infra-spec.md) | Especificacao da infraestrutura Terraform |
 
 ---
 
-## Known Limitations
+## Limitacoes conhecidas
 
-- **Tranco rank** measures popularity, not security — used as a weak auxiliary signal for `web_traffic`
-- **Google Safe Browsing** requires an API key; `Statistical_report` falls back to `0` without it
-- **PageRank** (original) is obsolete since 2016; Open PageRank measures SEO authority, not phishing risk
-- **Google Index** has no free official API; scraping is not used
-- **Backlinks** (`Links_pointing_to_page`) require paid APIs; correlation with phishing is only +0.03 in the dataset
-- Model output is probabilistic — intended as a decision-support signal, not an absolute verdict
+- **Ranking Tranco** mede popularidade, nao seguranca — usado como sinal auxiliar fraco para `web_traffic`
+- **Google Safe Browsing** requer chave de API; sem ela, `Statistical_report` usa fallback `0`
+- **PageRank** original foi descontinuado em 2016; Open PageRank mede autoridade de SEO, nao risco de phishing
+- **Google Index** nao possui API gratuita oficial; scraping do Google nao e utilizado
+- **Backlinks** (`Links_pointing_to_page`) exigem APIs pagas; correlacao com phishing e de apenas +0.03 no dataset
+- O resultado do modelo e probabilistico — serve como apoio a analise, nao como veredicto absoluto
