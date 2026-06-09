@@ -41,7 +41,7 @@ NODE_ATTRS = {
 # ══════════════════════════════════════════════════════════════════════════════
 with Diagram(
     "MLOps Phishing Detection — Application Runtime",
-    filename=str(IMAGES / "architecture-app-runtime"),
+    filename=str(IMAGES / "architecture-app-runtime-infra"),
     outformat="png",
     graph_attr=BASE_ATTRS,
     node_attr=NODE_ATTRS,
@@ -133,7 +133,7 @@ print("✓ architecture-cicd-deployment.png")
 # ══════════════════════════════════════════════════════════════════════════════
 with Diagram(
     "MLOps Phishing Detection — Terraform AWS Infrastructure",
-    filename=str(IMAGES / "architecture-terraform-aws"),
+    filename=str(IMAGES / "architecture-terraform-infra"),
     outformat="png",
     graph_attr={**BASE_ATTRS, "ranksep": "1.2"},
     node_attr=NODE_ATTRS,
