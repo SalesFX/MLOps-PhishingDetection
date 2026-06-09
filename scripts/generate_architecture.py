@@ -19,7 +19,7 @@ graph_attr = {
     "fontsize": "12",
     "bgcolor": "white",
     "pad": "1.0",
-    "splines": "curved",
+    "splines": "ortho",
     "nodesep": "0.7",
     "ranksep": "1.1",
     "fontname": "Helvetica",
