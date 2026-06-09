@@ -191,6 +191,39 @@
     .hist-badge.phishing  { background: #fee2e2; color: #991b1b; }
     .hist-badge.legit     { background: #dcfce7; color: #166534; }
     .hist-time { font-size: 0.75rem; color: #9ca3af; white-space: nowrap; }
+
+    /* train section */
+    .train-section {
+      margin-top: 2.5rem;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 1.5rem;
+    }
+    .train-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151; }
+    .train-section p  { font-size: 0.875rem; color: #6b7280; margin-bottom: 0.75rem; }
+    .btn-secondary {
+      padding: 0.6rem 1.25rem;
+      background: #fff;
+      color: #374151;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-secondary:hover:not(:disabled) { background: #f9fafb; border-color: #9ca3af; }
+    .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .train-status {
+      display: none;
+      margin-top: 0.75rem;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .train-status.running  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .train-status.success  { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .train-status.error    { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
   </style>
 </head>
 <body>
@@ -215,6 +248,13 @@
   <section id="history-section" aria-label="Histórico da sessão">
     <h2>Histórico da Sessão</h2>
     <div id="history-list"></div>
+  </section>
+
+  <section class="train-section" aria-label="Gerenciar modelo">
+    <h2>Treinar Modelo</h2>
+    <p>Executa o pipeline completo: ingestão do MongoDB, validação, transformação e treino de 5 modelos. Leva cerca de 3 a 5 minutos.</p>
+    <button id="train-btn" class="btn-secondary" onclick="trainModel()">Treinar Modelo</button>
+    <div id="train-status" class="train-status" role="status" aria-live="polite"></div>
   </section>
 
 </div>
@@ -344,6 +384,28 @@
       histList.prepend(item);
       histSect.style.display = 'block';
     }
+
+    window.trainModel = async function () {
+      const btn    = document.getElementById('train-btn');
+      const status = document.getElementById('train-status');
+
+      btn.disabled = true;
+      status.className = 'train-status running';
+      status.textContent = '⏳ Treinando modelo... isso pode levar 3 a 5 minutos.';
+      status.style.display = 'block';
+
+      try {
+        const res = await fetch('/train');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        status.className = 'train-status success';
+        status.textContent = '✓ Modelo treinado com sucesso! Pode analisar URLs agora.';
+      } catch (err) {
+        status.className = 'train-status error';
+        status.textContent = 'Erro ao treinar: ' + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    };
   })();
 </script>
 </body>
