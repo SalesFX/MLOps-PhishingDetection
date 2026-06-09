@@ -21,6 +21,7 @@ dependencies = [
     "scikit-learn>=1.7.0",
     "setuptools>=80.9.0",
     "uvicorn>=0.34.3",
+    "diagrams>=0.25.1",
 ]
 
 [project.optional-dependencies]
