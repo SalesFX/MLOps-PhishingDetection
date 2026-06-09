@@ -6,6 +6,9 @@ from network_security.utils.feature_extractor.features import (
     FEATURE_ORDER,
     build_feature_vector,
 )
+from network_security.utils.feature_extractor.http_features import (
+    extract_http_features,
+)
 
 _SHORTENING_SERVICES: frozenset[str] = frozenset({
     "bit.ly", "goo.gl", "tinyurl.com", "ow.ly", "t.co", "is.gd", "cli.gs",
@@ -15,8 +18,8 @@ _SHORTENING_SERVICES: frozenset[str] = frozenset({
     "cutt.ly",
 })
 
-# Features calculadas a partir da string da URL nesta etapa.
-# As demais 20 features continuam usando fallback (0).
+# Features calculadas a partir da string da URL.
+# As demais 8 features (WHOIS/DNS, APIs externas) continuam usando fallback (0).
 _IMPLEMENTED_STRING_FEATURES: frozenset[str] = frozenset({
     "having_IP_Address",
     "URL_Length",
@@ -36,8 +39,9 @@ class URLFeatureExtractor:
 
     Estrutura preparada para implementacao incremental:
     - Etapa 1: retornava todos os fallbacks
-    - Etapa 2 (atual): 10 features extraidas da string da URL
-    - Etapa 3+: features HTTP/HTML, WHOIS/DNS, APIs externas
+    - Etapa 2: 10 features extraidas da string da URL
+    - Etapa 5 (atual): 12 features HTTP/HTML adicionadas via fetch real
+    - Etapa 6+: features WHOIS/DNS, APIs externas
     """
 
     async def extract(self, url: str) -> dict[str, object]:
@@ -63,13 +67,24 @@ class URLFeatureExtractor:
             "Abnormal_URL": self._abnormal_url(normalized, parsed),
         }
 
+        http_result = await extract_http_features(normalized)
+        computed.update(http_result["features"])  # type: ignore[arg-type]
+
         features: dict[str, int] = dict(FEATURE_FALLBACKS)
         features.update(computed)
+
+        # Build warnings in FEATURE_ORDER so the caller can rely on position.
+        # HTTP warnings are keyed by feature name (text before first ':').
+        http_warnings: dict[str, str] = {
+            w.split(":")[0]: w for w in http_result["warnings"]  # type: ignore[union-attr]
+        }
 
         warnings: list[str] = []
         for f in FEATURE_ORDER:
             if f in _IMPLEMENTED_STRING_FEATURES:
                 warnings.append(f"{f}: extraido da string da URL")
+            elif f in http_warnings:
+                warnings.append(http_warnings[f])
             else:
                 warnings.append(f"{f}: fallback neutro (extracao nao implementada)")
 

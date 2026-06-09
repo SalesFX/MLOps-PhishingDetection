@@ -66,18 +66,22 @@ def test_predict_url_string_features_are_calculated(mock_load_object: MagicMock,
 @patch("app.load_object")
 def test_predict_url_fallback_features_are_zero(mock_load_object: MagicMock, mock_network_model_cls: MagicMock) -> None:
     _make_mocks(mock_load_object, mock_network_model_cls)
-    response = client.post("/predict-url", json={"url": "http://google.com"})
+    # 192.168.1.1 is SSRF-blocked so HTTP fetch never happens and WHOIS/DNS
+    # features remain at their neutral fallback value.
+    response = client.post("/predict-url", json={"url": "http://192.168.1.1/login"})
     assert response.status_code == 200
     features = response.json()["features"]
-    # SSLfinal_State is not implemented yet and must use the fallback value 0
-    assert features["SSLfinal_State"] == 0
+    # age_of_domain is a WHOIS feature not yet implemented; fallback must be 0
+    assert features["age_of_domain"] == 0
 
 
 @patch("app.NetworkModel")
 @patch("app.load_object")
 def test_predict_url_warnings_present_for_fallback_features(mock_load_object: MagicMock, mock_network_model_cls: MagicMock) -> None:
     _make_mocks(mock_load_object, mock_network_model_cls)
-    response = client.post("/predict-url", json={"url": "http://google.com"})
+    # 192.168.1.1 is SSRF-blocked: all 12 HTTP features fall back plus 8
+    # WHOIS/DNS/API features, giving 20 fallbacks and 10 calculated (string only).
+    response = client.post("/predict-url", json={"url": "http://192.168.1.1/login"})
     assert response.status_code == 200
     body = response.json()
     # 20 features use fallback; each should appear in warnings

@@ -239,12 +239,21 @@ class TestExtractorIntegration:
         assert len(result["features"]) == 30
 
     def test_unimplemented_features_use_fallback_zero(self) -> None:
-        result = asyncio.run(self.extractor.extract("http://example.com"))
-        non_implemented = [f for f in FEATURE_ORDER if f not in {
+        # Use an SSRF-blocked IP so no real HTTP request is made; HTTP features
+        # fall back to 0 (fetch error).  Only WHOIS/DNS/API features are checked
+        # here — they are still not implemented and must remain 0.
+        result = asyncio.run(self.extractor.extract("http://192.168.1.1"))
+        implemented = {
+            # string features
             "having_IP_Address", "URL_Length", "Shortining_Service",
             "having_At_Symbol", "double_slash_redirecting", "Prefix_Suffix",
             "having_Sub_Domain", "HTTPS_token", "port", "Abnormal_URL",
-        }]
+            # HTTP/HTML features (stage 5)
+            "SSLfinal_State", "Favicon", "Request_URL", "URL_of_Anchor",
+            "Links_in_tags", "SFH", "Submitting_to_email", "Redirect",
+            "on_mouseover", "RightClick", "popUpWidnow", "Iframe",
+        }
+        non_implemented = [f for f in FEATURE_ORDER if f not in implemented]
         for feature in non_implemented:
             assert result["features"][feature] == 0, (
                 f"{feature} should be fallback 0, got {result['features'][feature]}"
