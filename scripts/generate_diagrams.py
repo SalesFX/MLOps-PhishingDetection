@@ -9,8 +9,10 @@ from diagrams.aws.general import General
 from diagrams.aws.network import ELB
 from diagrams.onprem.ci import GithubActions
 from diagrams.onprem.database import MongoDB
+from diagrams.onprem.iac import Terraform
 from diagrams.onprem.vcs import Github
 from diagrams.onprem.client import User
+from diagrams.programming.flowchart import Document
 from diagrams.programming.language import Python
 from diagrams.programming.framework import FastAPI
 
@@ -55,7 +57,7 @@ with Diagram(
         fe    = Python("Feature Extractor\n30 phishing features")
 
     model = Python("ML Model\nGradient Boosting")
-    resp  = Python("JSON Response\nprediction · confidence · warnings")
+    resp  = Document("JSON Response\nprediction · confidence · warnings")
 
     user_out = User("User / Browser\nJSON response")
 
@@ -138,7 +140,7 @@ with Diagram(
     show=False,
     direction="TB",
 ):
-    terraform = Python("Terraform\nInfrastructure as Code\n4 independent stacks")
+    terraform = Terraform("Terraform\nInfrastructure as Code\n4 independent stacks")
 
     with Cluster("Stack 00 — Remote Backend"):
         tf_backend = S3("S3 — tfstate\n+ DynamoDB lock")
