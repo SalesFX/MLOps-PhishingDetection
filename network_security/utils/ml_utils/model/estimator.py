@@ -18,3 +18,10 @@ class NetworkModel:
             return y_hat
         except Exception as e:
             raise NetworkSecurityException(e, sys)
+
+    def predict_proba(self, x: object) -> object:
+        try:
+            x_transform = self.preprocessor.transform(x)
+            return self.model.predict_proba(x_transform)
+        except Exception as e:
+            raise NetworkSecurityException(e, sys)

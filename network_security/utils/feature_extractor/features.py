@@ -1,5 +1,14 @@
 from enum import Enum
 
+# IMPORTANTE — codificacao das features:
+# Os valores -1, 0 e 1 seguem a codificacao original do dataset UCI Phishing Websites.
+# A interpretacao de cada valor depende da feature especifica e NAO e uniforme:
+#   - Para a maioria das features binarias: -1 indica phishing, 1 indica legitimo.
+#   - Para algumas features (ex: URL_Length, having_Sub_Domain): 0 indica estado intermediario.
+#   - O label final (Result) usa: 1 = legitimo, -1 = phishing (remapeado para 0/1 no treino).
+# Nunca assuma que "1 = phishing" ou "-1 = phishing" sem verificar a feature.
+# O modelo aprendeu as relacoes corretas; a codificacao aqui deve ser fiel ao dataset.
+
 
 class FeatureGroup(str, Enum):
     URL_STRING = "url_string"
