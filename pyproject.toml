@@ -16,6 +16,7 @@ dependencies = [
     "pyaml>=25.5.0",
     "pymongo[srv]==3.12",
     "python-dotenv>=1.1.0",
+    "python-whois>=0.9.5",
     "python-multipart>=0.0.20",
     "scikit-learn>=1.7.0",
     "setuptools>=80.9.0",

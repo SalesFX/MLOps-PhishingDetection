@@ -1,6 +1,9 @@
 import ipaddress
 from urllib.parse import urlparse, ParseResult
 
+from network_security.utils.feature_extractor.dns_whois_features import (
+    extract_dns_whois_features,
+)
 from network_security.utils.feature_extractor.features import (
     FEATURE_FALLBACKS,
     FEATURE_ORDER,
@@ -40,8 +43,9 @@ class URLFeatureExtractor:
     Estrutura preparada para implementacao incremental:
     - Etapa 1: retornava todos os fallbacks
     - Etapa 2: 10 features extraidas da string da URL
-    - Etapa 5 (atual): 12 features HTTP/HTML adicionadas via fetch real
-    - Etapa 6+: features WHOIS/DNS, APIs externas
+    - Etapa 5: 12 features HTTP/HTML adicionadas via fetch real
+    - Etapa 6 (atual): 3 features DNS/WHOIS adicionadas
+    - Etapa 7+: features de APIs externas
     """
 
     async def extract(self, url: str) -> dict[str, object]:
@@ -70,13 +74,19 @@ class URLFeatureExtractor:
         http_result = await extract_http_features(normalized)
         computed.update(http_result["features"])  # type: ignore[arg-type]
 
+        dns_whois_result = await extract_dns_whois_features(normalized)
+        computed.update(dns_whois_result["features"])  # type: ignore[arg-type]
+
         features: dict[str, int] = dict(FEATURE_FALLBACKS)
         features.update(computed)
 
         # Build warnings in FEATURE_ORDER so the caller can rely on position.
-        # HTTP warnings are keyed by feature name (text before first ':').
+        # HTTP and DNS/WHOIS warnings are keyed by feature name (text before first ':').
         http_warnings: dict[str, str] = {
             w.split(":")[0]: w for w in http_result["warnings"]  # type: ignore[union-attr]
+        }
+        dns_whois_warnings: dict[str, str] = {
+            w.split(":")[0]: w for w in dns_whois_result["warnings"]  # type: ignore[union-attr]
         }
 
         warnings: list[str] = []
@@ -85,6 +95,8 @@ class URLFeatureExtractor:
                 warnings.append(f"{f}: extraido da string da URL")
             elif f in http_warnings:
                 warnings.append(http_warnings[f])
+            elif f in dns_whois_warnings:
+                warnings.append(dns_whois_warnings[f])
             else:
                 warnings.append(f"{f}: fallback neutro (extracao nao implementada)")
 

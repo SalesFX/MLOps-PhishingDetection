@@ -304,14 +304,21 @@ def test_extract_still_returns_30_features(
 
 
 @respx.mock
+@patch("network_security.utils.feature_extractor.dns_whois_features.whois.whois")
+@patch("network_security.utils.feature_extractor.dns_whois_features.socket.getaddrinfo")
 @patch("app.NetworkModel")
 @patch("app.load_object")
-def test_whois_dns_features_still_fallback(
+def test_whois_dns_features_calculated_after_etapa6(
     mock_load_object: MagicMock,
     mock_network_model_cls: MagicMock,
+    mock_getaddrinfo: MagicMock,
+    mock_whois: MagicMock,
 ) -> None:
-    """WHOIS/DNS features must still be 0 (not yet implemented)."""
+    """DNS/WHOIS features are now calculated (Etapa 6). External-API features remain 0."""
+    import socket as _socket
+
     import numpy as np
+
     from app import app
 
     mock_load_object.side_effect = [MagicMock(), MagicMock()]
@@ -319,6 +326,19 @@ def test_whois_dns_features_still_fallback(
     instance.predict.return_value = np.array([1])
     instance.predict_proba.return_value = np.array([[0.02, 0.98]])
     mock_network_model_cls.return_value = instance
+
+    mock_getaddrinfo.return_value = [
+        (_socket.AF_INET, _socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))
+    ]
+    w = MagicMock()
+    from datetime import datetime, timedelta, timezone as _tz
+
+    now = datetime.now(tz=_tz.utc)
+    w.get.side_effect = lambda key: {
+        "creation_date": now - timedelta(days=400),
+        "expiration_date": now + timedelta(days=400),
+    }.get(key)
+    mock_whois.return_value = w
 
     respx.get("https://example.com").mock(
         return_value=httpx.Response(200, text="<html><body></body></html>")
@@ -328,19 +348,31 @@ def test_whois_dns_features_still_fallback(
     response = tc.post("/predict-url", json={"url": "https://example.com"})
     assert response.status_code == 200
     features = response.json()["features"]
-    for feat in ("age_of_domain", "DNSRecord", "web_traffic", "Page_Rank"):
+    # DNS/WHOIS features are now calculated
+    assert features["DNSRecord"] == 1
+    assert features["age_of_domain"] == 1
+    assert features["Domain_registeration_length"] == 1
+    # External-API features remain fallback 0
+    for feat in ("web_traffic", "Page_Rank", "Google_Index"):
         assert features[feat] == 0, f"{feat} should still be fallback 0"
 
 
 @respx.mock
+@patch("network_security.utils.feature_extractor.dns_whois_features.whois.whois")
+@patch("network_security.utils.feature_extractor.dns_whois_features.socket.getaddrinfo")
 @patch("app.NetworkModel")
 @patch("app.load_object")
-def test_extraction_status_shows_22_calculated(
+def test_extraction_status_shows_25_calculated(
     mock_load_object: MagicMock,
     mock_network_model_cls: MagicMock,
+    mock_getaddrinfo: MagicMock,
+    mock_whois: MagicMock,
 ) -> None:
-    """With a successful HTTP fetch, extraction_status.calculated_features must be 22."""
+    """With successful HTTP fetch and DNS/WHOIS mocked, calculated_features must be 25."""
+    import socket as _socket
+
     import numpy as np
+
     from app import app
 
     mock_load_object.side_effect = [MagicMock(), MagicMock()]
@@ -348,6 +380,19 @@ def test_extraction_status_shows_22_calculated(
     instance.predict.return_value = np.array([1])
     instance.predict_proba.return_value = np.array([[0.02, 0.98]])
     mock_network_model_cls.return_value = instance
+
+    mock_getaddrinfo.return_value = [
+        (_socket.AF_INET, _socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))
+    ]
+    w = MagicMock()
+    from datetime import datetime, timedelta, timezone as _tz
+
+    now = datetime.now(tz=_tz.utc)
+    w.get.side_effect = lambda key: {
+        "creation_date": now - timedelta(days=400),
+        "expiration_date": now + timedelta(days=400),
+    }.get(key)
+    mock_whois.return_value = w
 
     respx.get("https://example.com").mock(
         return_value=httpx.Response(200, text="<html><body><p>hello</p></body></html>")
@@ -357,5 +402,6 @@ def test_extraction_status_shows_22_calculated(
     response = tc.post("/predict-url", json={"url": "https://example.com"})
     assert response.status_code == 200
     status = response.json()["extraction_status"]
-    assert status["calculated_features"] == 22
-    assert status["fallback_features"] == 8
+    # 10 string + 12 HTTP + 3 DNS/WHOIS = 25
+    assert status["calculated_features"] == 25
+    assert status["fallback_features"] == 5
