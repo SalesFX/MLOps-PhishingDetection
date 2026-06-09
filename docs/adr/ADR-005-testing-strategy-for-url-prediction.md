@@ -17,7 +17,7 @@ Toda dependencia externa e mockada nos testes:
 - **Grupo HTTP/HTML:** `httpx` mockado com `respx` ou `unittest.mock` — retorna HTML fixo
 - **Grupo WHOIS/DNS:** `python-whois` e `dnspython` mockados com `unittest.mock.patch`
 - **Grupo APIs externas:** mockados, testando tanto o caminho de sucesso quanto o fallback
-- **Endpoint `/predict-url`:** teste de integracao com modelo mockado via `unittest.mock.patch` em `load_object`
+- **Endpoint `/predict-url`:** teste de integracao com mock no ponto exato onde o servico de inferencia carrega ou executa a predicao, sem depender de arquivos de modelo em disco
 - **Fallback:** cada feature tem um teste explicito para o caminho de falha (timeout, excecao) garantindo que retorna 0 sem lancar erro
 
 Nenhum teste automatizado depende de conectividade real. O CI (GitHub Actions) pode rodar `pytest tests/` sem configuracao adicional de rede.

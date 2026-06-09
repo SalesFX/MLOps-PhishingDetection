@@ -16,7 +16,7 @@ Implementar a interface web com:
 - Pagina HTML servida pelo FastAPI via Jinja2 (infraestrutura ja existente no projeto)
 - JavaScript vanilla com `fetch` para chamar `POST /predict-url` de forma assincrona
 - Estado de loading visivel enquanto a analise ocorre ("Analisando URL...")
-- Badge colorido no resultado: vermelho para phishing, verde para legitima
+- Badge com cor E texto descritivo no resultado: vermelho + "PHISHING — Alto risco" para phishing, verde + "LEGITIMA — Baixo risco" para legitima. O resultado nunca depende apenas da cor para ser compreendido.
 - Historico das ultimas predicoes armazenado em memoria no JavaScript da sessao (sem backend adicional)
 - Bloco colapsavel com as 30 features calculadas e seus valores
 

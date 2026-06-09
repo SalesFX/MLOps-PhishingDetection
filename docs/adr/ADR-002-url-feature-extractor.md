@@ -14,7 +14,7 @@ A extracao das 30 features a partir de uma URL bruta envolve logica heterogenea:
 Criar o modulo `network_security/utils/feature_extractor/` com dois arquivos:
 
 - `features.py`: lista ordenada das 30 features, agrupamento por tipo de extracao e valores de fallback
-- `extractor.py`: classe `URLFeatureExtractor` com metodo `async extract(url: str) -> dict[str, int]` que executa os quatro grupos em paralelo via `asyncio`
+- `extractor.py`: classe `URLFeatureExtractor` com metodo `async extract(url: str) -> dict[str, int]`. O parse puro da URL e sincrono. Operacoes HTTP e chamadas a APIs externas podem usar `asyncio` quando a concorrencia for vantajosa. Consultas WHOIS e DNS, quando necessario, sao executadas com timeout em thread separada via `asyncio.to_thread` para nao bloquear o event loop.
 
 O modulo e agnnostico ao modelo — apenas extrai features, nao faz inferencia.
 

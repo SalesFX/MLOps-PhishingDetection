@@ -17,7 +17,7 @@ Usar abordagem configuravel em tres niveis:
 2. **Fallback neutro (0):** se a tentativa falhar por qualquer motivo (timeout, erro HTTP, API indisponivel), usa valor 0
 3. **Warning no response:** toda feature que usou fallback e listada no campo `warnings` do JSON de resposta — nunca silencioso
 
-O valor 0 foi escolhido como neutro por nao ser nem -1 (legitimo) nem 1 (phishing) nas features binarias do dataset UCI.
+O valor 0 foi escolhido como decisao pragmatica de engenharia: nao e nem -1 (legitimo) nem 1 (phishing) nas features binarias do dataset UCI, o que minimiza o vies introducido. Esta e uma limitacao documentada — para features onde 0 nao possui semantica neutra perfeita (ex: URL_Length, onde 0 nunca ocorre naturalmente), o fallback pode introduzir leve distorcao no resultado. Esse risco e aceito e documentado no response via `warnings`.
 
 ## Consequencias
 
