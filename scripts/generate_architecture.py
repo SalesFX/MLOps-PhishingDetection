@@ -7,21 +7,22 @@ from diagrams.aws.compute import EC2
 from diagrams.aws.storage import S3
 from diagrams.aws.general import General
 from diagrams.onprem.ci import GithubActions
-from diagrams.onprem.container import Docker
 from diagrams.onprem.database import MongoDB
 from diagrams.onprem.vcs import Github
 from diagrams.programming.language import Python
+from diagrams.onprem.client import User
 from diagrams.programming.framework import FastAPI
 
 OUTPUT = str(Path(__file__).parent.parent / "images" / "architecture")
 
 graph_attr = {
-    "fontsize": "12",
+    "fontsize": "13",
     "bgcolor": "white",
-    "pad": "0.8",
-    "splines": "ortho",
+    "pad": "1.0",
+    "splines": "curved",
     "nodesep": "0.6",
-    "ranksep": "0.8",
+    "ranksep": "0.9",
+    "fontname": "Helvetica",
 }
 
 with Diagram(
@@ -35,47 +36,55 @@ with Diagram(
     github = Github("GitHub\nMLOps-PhishingDetection")
 
     with Cluster("CI/CD — GitHub Actions"):
-        ci  = GithubActions("1. Integration\npytest 151 tests")
-        cd  = GithubActions("2. Delivery\ndocker build + push")
-        dep = GithubActions("3. Deployment\nSSH → EC2")
+        ci = GithubActions("pytest 151 tests\ndocker build + push ECR\nSSH deploy to EC2")
 
-    with Cluster("AWS — Terraform (4 stacks)"):
+    with Cluster("AWS — Terraform"):
         oidc = General("IAM / OIDC")
-        ecr  = General("ECR")
-        s3   = S3("S3\nArtifacts")
+        ecr  = General("ECR\nDocker registry")
         ec2  = EC2("EC2 t3.small")
+        s3   = S3("S3\nmodel.pkl")
 
     with Cluster("Docker Container — FastAPI"):
-        api      = Python("POST /predict-url\nGET  /url-checker\nGET  /train")
-        extrator = Python("Feature Extractor\n30 features")
-        model    = Python("Gradient Boosting\n(scikit-learn)")
+        api = FastAPI(
+            "POST /predict-url  (URL mode)\n"
+            "POST /predict       (CSV mode)\n"
+            "GET  /url-checker   (UI)\n"
+            "GET  /train         (pipeline)"
+        )
+        fe = Python(
+            "Feature Extractor — 30 features\n"
+            "String · HTTP/HTML · DNS/WHOIS\n"
+            "External APIs · SSRF Validator"
+        )
+        model = Python("Gradient Boosting\nF1=0.97 · Recall=0.97")
 
-    mongo  = MongoDB("MongoDB Atlas")
-    tranco = General("Tranco API")
-    gsb    = General("Google Safe\nBrowsing API")
+    with Cluster("External Services"):
+        mongo  = MongoDB("MongoDB Atlas")
+        gsb    = General("Google Safe Browsing\nStatistical_report")
+        tranco = General("Tranco API\nweb_traffic")
 
-    # main flow
-    github >> ci >> cd >> dep
+    user = User("User / Browser")
+    resp = Python("JSON Response\nprediction · confidence\n30 features · warnings")
 
-    cd  >> Edge(label="push image") >> ecr
-    dep >> Edge(label="pull & run") >> ec2
-    ec2 >> api
+    # main flows
+    github >> Edge(label="push") >> ci
+    oidc   >> Edge(style="dashed") >> ci
+    ci     >> Edge(label="push image") >> ecr
+    ci     >> Edge(label="SSH deploy") >> ec2
+    ec2    >> api
 
-    # model uses
-    api      >> extrator
-    api      >> model
-    model    >> Edge(label="load .pkl") >> s3
+    s3    >> Edge(label="load model.pkl", color="darkgreen") >> model
+    api   >> Edge(label="save artifacts", style="dashed") >> s3
 
-    # extractor uses
-    extrator >> Edge(style="dashed") >> mongo
-    extrator >> Edge(style="dashed") >> tranco
-    extrator >> Edge(style="dashed") >> gsb
+    user  >> Edge(label="URL / CSV") >> api
+    api   >> fe
+    fe    >> Edge(label="30-feature vector") >> model
+    model >> resp
+    resp  >> Edge(label="JSON") >> user
 
-    # training
-    api >> Edge(label="train") >> mongo
-
-    # OIDC
-    oidc >> Edge(style="dashed", label="auth") >> cd
+    fe >> Edge(style="dashed") >> gsb
+    fe >> Edge(style="dashed") >> tranco
+    fe >> Edge(style="dashed", label="DNS / WHOIS / data") >> mongo
 
 
 print(f"Diagrama gerado: {OUTPUT}.png")
