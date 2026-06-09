@@ -67,6 +67,11 @@ async def index() -> RedirectResponse:
     return RedirectResponse(url="/docs")
 
 
+@app.get("/url-checker")
+async def url_checker_page(request: Request) -> _TemplateResponse:
+    return templates.TemplateResponse(request=request, name="url_checker.html", context={})
+
+
 @app.get("/train")
 async def train_route() -> Response:
     try:
