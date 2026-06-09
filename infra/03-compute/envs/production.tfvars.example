@@ -1,0 +1,7 @@
+aws_region       = "us-east-1"
+project_name     = "network-security-mlops"
+environment      = "production"
+instance_type    = "t3.small"
+key_name         = "YOUR_KEY_PAIR_NAME"
+allowed_ssh_cidr = "YOUR_IP/32"
+allowed_app_cidr = "0.0.0.0/0"

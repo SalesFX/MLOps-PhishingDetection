@@ -1,0 +1,6 @@
+aws_region    = "us-east-1"
+project_name  = "network-security-mlops"
+environment   = "production"
+github_owner  = "SalesFX"
+github_repo   = "MLOps-PhishingDetection"
+github_branch = "main"

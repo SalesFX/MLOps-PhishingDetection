@@ -1,0 +1,6 @@
+aws_region    = "us-east-1"
+project_name  = "network-security-mlops"
+environment   = "production"
+github_owner  = "YOUR_GITHUB_USERNAME"
+github_repo   = "YOUR_REPO_NAME"
+github_branch = "main"
