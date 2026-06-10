@@ -4,8 +4,6 @@ Plataforma MLOps de produção para detecção de phishing em URLs. O sistema re
 
 Também aceita CSV com features pré-extraídas para uso técnico, batch e experimentos.
 
-![CI/CD](https://github.com/SalesFX/MLOps-PhishingDetection/actions/workflows/main.yaml/badge.svg)
-
 ---
 
 ## Stack
